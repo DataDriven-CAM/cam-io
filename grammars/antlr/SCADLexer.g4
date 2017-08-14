@@ -6,26 +6,26 @@
 lexer grammar SCADLexer;
 
 Children : 'children';
-Sphere : 'sphere';
-Cube : 'cube';
-Cylinder : 'cylinder';
-Circle : 'circle';
-Square : 'square';
-Polygon : 'polygon';
-Translate : 'translate';
-Rotate : 'rotate';
-Scale : 'scale';
-Resize : 'resize';
-Mirror : 'mirror';
-Offset : 'offset';
+Sphere : 'sphere' ->pushMode(ShapeLine);
+Cube : 'cube' ->pushMode(ShapeLine);
+Cylinder : 'cylinder' ->pushMode(ShapeLine);
+Circle : 'circle' ->pushMode(ShapeLine);
+Square : 'square' ->pushMode(ShapeLine);
+Polygon : 'polygon' ->pushMode(ShapeLine);
+Translate : 'translate' ->pushMode(TransformationLine);
+Rotate : 'rotate' ->pushMode(TransformationLine);
+Scale : 'scale' ->pushMode(TransformationLine);
+Resize : 'resize' ->pushMode(TransformationLine);
+Mirror : 'mirror' ->pushMode(TransformationLine);
+Offset : 'offset' ->pushMode(TransformationLine);
 Hull : 'hull';
 Minkowski : 'minkowski';
 Union : 'union';
 Difference : 'difference';
 Intersection : 'intersection';
 Color : 'color';
-Module : 'module';
-Function : 'function';
+Module : 'module' ->pushMode(ModuleLine);
+Function : 'function' ->pushMode(FunctionLine);
 Linear_extrude : 'linear_extrude';
 Rotate_extrude : 'rotate_extrude';
 Surface : 'surface';
@@ -58,15 +58,6 @@ Max : 'max';
 
 Import : 'import';
 Use : 'use';
-Fa : Dollar 'fa';
-Fs : Dollar 'fs';
-Fn : Dollar 'fn';
-T : Dollar 't';
-Vpr : Dollar 'vpr';
-Vpt : Dollar 'vpt';
-Vpd : Dollar 'vpd';
-True : 'true';
-False : 'false';
 Polyhedron : 'polyhedron';
 Faces : 'faces';
 Paths : 'paths';
@@ -74,31 +65,23 @@ Convexity : 'convexity';
 Layer : 'layer';
 Origin : 'origin';
 Cut : 'cut';
-Points : 'points';
 Triangles : 'triangles';
 Angle : 'angle';
-Size: 'size';
-Height : 'height';
-Center : 'center';
 Twist : 'twist';
 Slices : 'slices';
 Text : 'text';
 Font : 'font';
 Halign : 'halign';
 Valign : 'valign';
-Echo : 'echo';
+Echo : 'echo' ->pushMode(ShapeLine);
 Version : 'version' '_num'?;
 If : 'if';
 Else : 'else';
 
-Float
-    :  Minus?Number Period Number?;
-Number : Minus? Digit+;
-String : ('"' ~('"')*'"');
 Variable : (Letter|Digit|Underscore)+;
 
-Eq : '=';
-Minus : '-';
+String : ('"' ~('"')*'"');
+Eq : '=' ->pushMode(ShapeLine),pushMode(Args);
 Plus : '+';
 Mutliply : '*';
 Divide : '/';
@@ -109,7 +92,6 @@ Ampersand : '&';
 Pipe : '|';
 Period : '.';
 Question : '?';
-Comma : ',';
 Underscore : '_';
 LParenthese : '(';
 RParenthese : ')';
@@ -119,7 +101,7 @@ LBracket : '[';
 RBracket : ']';
 Semicolon : ';';
 Colon : ':';
-Dollar : '$';
+Dollar : '$' ->pushMode(SpecialVariables);
 Pound : '#';
 Percent : '%';
 
@@ -135,7 +117,7 @@ Letter
 //Space	:	  ' ';
 
 
-MultilineComment : ('/*' ~('"')*'*/')-> channel(HIDDEN);
+MultilineComment : ('/*' ~('*')*'*/')-> channel(HIDDEN);
 Comment : ('//' ~('\n')*)-> channel(HIDDEN);
 Whitespace  :   ( ' '
         | '\t'
@@ -150,3 +132,80 @@ fragment
 Digit	    : '0'..'9'
             ;
 
+mode ModuleLine;
+
+ModuleName : Variable;
+ModuleLParenthese : LParenthese ->pushMode(Args);
+ModuleWhitespace  :   Whitespace -> channel(HIDDEN);
+
+mode FunctionLine;
+
+FunctionName : Variable;
+FunctionLParenthese : LParenthese ->pushMode(Args);
+FunctionWhitespace  :   Whitespace -> channel(HIDDEN);
+
+mode ShapeLine;
+
+ShapeEq : Eq ->pushMode(Args);
+ArgLParenthese : LParenthese ->pushMode(Args);
+ShapeWhitespace  :   Whitespace -> channel(HIDDEN);
+
+mode TransformationLine;
+
+TransformationEq : Eq ->pushMode(Args);
+TransformationComma : Comma;
+TransformationLParenthese : LParenthese ->pushMode(Args);
+TransformationWhitespace  :   Whitespace -> channel(HIDDEN);
+
+mode Args;
+
+True : 'true';
+False : 'false';
+Center : 'center';
+ArgScale : Scale;
+Size: 'size';
+Height : 'height';
+Points : 'points';
+ArgVersion : Version ->pushMode(CallLine);
+R : 'r' ;
+D : 'd';
+H : 'h';
+
+Float
+    :  Number Period Number?;
+Number : Digit+;
+ArgVariable : (Letter|Digit|Underscore)+;
+ArgRParenthese : RParenthese ->popMode, popMode;
+ArgSemicolon : Semicolon ->popMode, popMode;
+ArgPeriod : Period;
+Comma : ',';
+Minus : '-';
+ArgEq : Eq;
+ArgLBracket : LBracket ->pushMode(ArrayLine);
+ArgString : String;
+
+ArgWhitespace  :   Whitespace -> channel(HIDDEN);
+
+mode ArrayLine;
+ArrayComma : Comma;
+ArrayMinus : Minus;
+ArrayFloat
+    :  Number Period Number?;
+ArrayNumber : Digit+;
+ArrayRBracket : RBracket ->popMode;
+
+mode CallLine;
+
+CallLParenthese : LParenthese;
+CallRParenthese : RParenthese ->popMode;
+CallWhitespace  :   Whitespace -> channel(HIDDEN);
+
+mode SpecialVariables;
+
+Fa : 'fa' ->popMode;
+Fs : 'fs' ->popMode;
+Fn : 'fn' ->popMode;
+Vpr : 'vpr' ->popMode;
+Vpt : 'vpt' ->popMode;
+Vpd : 'vpd' ->popMode;
+T : 't' ->popMode;
