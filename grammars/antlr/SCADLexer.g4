@@ -5,7 +5,7 @@
  */
 lexer grammar SCADLexer;
 
-Children : 'children';
+Children : 'children'->pushMode(CallLine);
 Sphere : 'sphere' ->pushMode(ShapeLine);
 Cube : 'cube' ->pushMode(ShapeLine);
 Cylinder : 'cylinder' ->pushMode(ShapeLine);
@@ -23,7 +23,7 @@ Minkowski : 'minkowski';
 Union : 'union' ->pushMode(BooleanLine);
 Difference : 'difference' ->pushMode(BooleanLine);
 Intersection : 'intersection' ->pushMode(BooleanLine);
-Color : 'color';
+Color : 'color' ->pushMode(ColorLine);
 Module : 'module' ->pushMode(ModuleLine);
 Function : 'function' ->pushMode(FunctionLine);
 Linear_extrude : 'linear_extrude' ->pushMode(ShapeLine);
@@ -66,7 +66,6 @@ Origin : 'origin';
 Cut : 'cut';
 Triangles : 'triangles';
 Angle : 'angle';
-Slices : 'slices';
 Text : 'text' ->pushMode(ShapeLine);
 Echo : 'echo' ->pushMode(ShapeLine);
 Version : 'version' '_num'?;
@@ -140,6 +139,12 @@ ShapeEq : Eq ->pushMode(Args);
 ShapeLParenthese : LParenthese ->pushMode(Args);
 ShapeWhitespace  :   Whitespace -> channel(HIDDEN);
 
+mode ColorLine;
+
+ColorEq : Eq ->pushMode(Args);
+ColorLParenthese : LParenthese ->pushMode(Args);
+ColorWhitespace  :   Whitespace -> channel(HIDDEN);
+
 mode TransformationLine;
 
 TransformationEq : Eq ->pushMode(Args);
@@ -154,6 +159,7 @@ False : 'false';
 Convexity : 'convexity';
 Center : 'center';
 Twist : 'twist';
+Slices : 'slices';
 ArgScale : Scale;
 Size: 'size';
 Height : 'height';
@@ -181,8 +187,9 @@ Plus : '+';
 Mutliply : '*';
 Divide : '/';
 String : ('"' ~('"')*'"');
-ArgEq : Eq;
+ArgEq : '=';
 ArgLBracket : '[' ;
+ArgDollar : '$' ->pushMode(SpecialVariables);
 
 ArgWhitespace  :   Whitespace -> channel(HIDDEN);
 

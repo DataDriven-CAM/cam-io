@@ -9,7 +9,7 @@ options {
     tokenVocab=SCADLexer;
 }
 
-scad : (import_line Semicolon| call Semicolon |component (scope|implicit_scope+ Semicolon?|Semicolon) |equation ArgSemicolon | fa ArgSemicolon | fs ArgSemicolon | fn ArgSemicolon |booleans (scope) |intersection_for (scope|implicit_scope+ Semicolon?) | for_loop (scope|implicit_scope+ Semicolon?) | if_then_else | use_line | modules (scope|implicit_scope+ Semicolon?) | function_line (scope|implicit_scope+ Semicolon?) | echo Semicolon | font Semicolon)+ EOF;
+scad : (import_line Semicolon| call Semicolon |component (scope|implicit_scope+ Semicolon?|Semicolon) |equation ArgSemicolon | special ArgSemicolon |booleans (scope) |intersection_for (scope|implicit_scope+ Semicolon?) | for_loop (scope|implicit_scope+ Semicolon?) | if_then_else | use_line | modules (scope|implicit_scope+ Semicolon?) | function_line (scope|implicit_scope+ Semicolon?) | echo Semicolon | font Semicolon)+ EOF;
 
 use_line : Use LessThan file_path GreaterThan;
 import_line : modifier? Import import_file;
@@ -20,7 +20,7 @@ file : (variable Eq)*String;
 modules : Module module_name (ModuleLParenthese (args|Comma)* RParenthese)? ;
 module_name : ModuleName;
 function_line : Function functions LParenthese (args|Comma)* RParenthese Eq ;
-args : equation|expression|size;
+args : equation|expression|size|fa|fn|fs;
 call : method LParenthese (args|Comma)* RParenthese ;
 
 equation : variable (Eq|ArgEq|ShapeEq) (number|expression);
@@ -75,10 +75,10 @@ component : modifier? (color|transforms|children|sphere|cube|cylinder|polyhedron
 booleans : (union_of|difference|intersection);
 modifier : Mutliply|Not|Pound|Percent;
 scope : (LBrace (implicit_scope Semicolon?)+  RBrace) ;
-implicit_scope : ((component+ |booleans |modules|function_line|equation|expression|intersection_for | for_loop | if_then_else | echo) scope?);
+implicit_scope : ((component+ |booleans |modules|function_line|equation ArgSemicolon|expression|intersection_for | for_loop | if_then_else | echo) scope?);
 
 transforms : (translate|rotate|scale|resize|mirror|offset);
-color : Color LParenthese (LBracket red Comma green Comma blue ArrayRBracket|number|textual|Comma)+ RParenthese ;
+color : Color ColorLParenthese (LBracket red Comma green Comma blue ArrayRBracket|number|textual|Comma)+ RParenthese ;
 red : expression;
 green : expression;
 blue : expression;
@@ -111,15 +111,15 @@ intersection : Intersection BooleanLParenthese BooleanRParenthese;
 
 sphere : Sphere ShapeLParenthese ((r|d|number|expression)|fa|fs|fn|Comma)* RParenthese;
 cube : Cube ShapeLParenthese (size|center|point|number|expression|Comma)* RParenthese;
-cylinder : Cylinder ShapeLParenthese (h Comma? | r Comma? | r1 Comma? | r2 Comma? | fa Comma? | center Comma? | expression Comma?)+ RParenthese;
+cylinder : Cylinder ShapeLParenthese (h Comma? | r Comma? | r1 Comma? | r2 Comma? | d Comma? | fa Comma? | center Comma? | expression Comma?)+ RParenthese;
 polyhedron : Polyhedron LParenthese (points|faces|convexity|triangles|Comma)* RParenthese;
-children : Children LParenthese expression? RParenthese;
+children : Children CallLParenthese expression? RParenthese;
 
 circle : Circle ShapeLParenthese ((r|d|variable|number)|fa|fs|fn|expression|Comma)* RParenthese;
 square : Square ShapeLParenthese (size|center|point|number|logical|expression|Comma)* RParenthese;
 polygon : Polygon ShapeLParenthese (points|paths|convexity|LBracket for_loop implicit_scope ArrayRBracket|expression)* RParenthese;
 text : Text ShapeLParenthese textual (size|number|font|halign|valign|fn|expression|Comma)* RParenthese;
-textual : Variable|String|expression;
+textual : Variable|ArgVariable|String|expression;
 font : Font ArgEq expression;
 halign : Halign ArgEq expression;
 valign : Valign ArgEq expression;
@@ -129,9 +129,6 @@ d : D ArgEq expression;
 h : H ArgEq expression;
 r1 : variable ArgEq expression;
 r2 : variable ArgEq expression;
-fa : Dollar Fa Eq number;
-fs : Dollar Fs Eq number;
-fn : Dollar Fn Eq expression;
 points : Points ArgEq (point|array|matrix|Comma)+;
 triangles : Triangles Eq (point|matrix|Comma)+;
 faces : Faces Eq (point|Comma)+;
@@ -145,14 +142,21 @@ height : Height ArgEq (number|expression);
 scale_arg : ArgScale ArgEq (number|expression);
 size : Size ArgEq (point|expression);
 center : Center ArgEq logical;
-twist : Twist Eq (number|expression);
-slices : Slices Eq (number|expression);
+twist : Twist ArgEq (number|expression);
+slices : Slices ArgEq (number|expression);
 
+special : fa|fs|fn|vpr|vpt|vpd;
+fa : (Dollar|ArgDollar) Fa (Eq|ArgEq) number;
+fs : (Dollar|ArgDollar) Fs (Eq|ArgEq) number;
+fn : (Dollar|ArgDollar) Fn (Eq|ArgEq) expression;
+vpr : (Dollar|ArgDollar) Vpr (Eq|ArgEq) expression;
+vpt : (Dollar|ArgDollar) Vpt (Eq|ArgEq) expression;
+vpd : (Dollar|ArgDollar) Vpd (Eq|ArgEq) expression;
         
 functions : Variable;
 method : Variable;
 array : variable? ArgLBracket let_? for_loop? (args) (Comma (args))* ArrayRBracket;
-variable : (Variable|ArgVariable|TransformVariable|Function|Square|Rotate|Scale|Font|Len|Angle|Layer|Children|Version|ArgVersion|Size)+;
+variable : (Variable|ArgVariable|TransformVariable|Function|Square|Rotate|Scale|Font|Len|Angle|Layer|Children|Version|ArgVersion|Cylinder|Height|Size)+;
 string: String;
 
 number : Float|Number;
