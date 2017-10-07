@@ -60,6 +60,7 @@ Semicolon : ';';
 Dollar : '$' ->pushMode(SpecialVariables);
 Pound : '#';
 Percent : '%';
+At: '@' ->pushMode(AnnotationLine);
 
 fragment
 Letter
@@ -169,6 +170,7 @@ ArgEq : Eq;
 ArgLBracket : LBracket ;
 ArgDollar : Dollar ->pushMode(SpecialVariables);
 ArgPercent : '%';
+ArgAt : At;
 
 fragment
 ArgLetter
@@ -188,6 +190,12 @@ ModuleWhitespace  :   Whitespace -> channel(HIDDEN);
 mode FunctionLine;
 FunctionVariable : Variable ->popMode;
 FunctionWhitespace  :   Whitespace -> channel(HIDDEN);
+
+mode AnnotationLine;
+AnnotationVariable : Variable;
+AnnotationLParenthese : LParenthese;
+AnnotationRParenthese : RParenthese ->popMode;
+AnnotationWhitespace  :   Whitespace -> channel(HIDDEN);
 
 mode MathLine;
 MathLParenthese : LParenthese;

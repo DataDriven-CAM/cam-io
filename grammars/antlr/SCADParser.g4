@@ -23,6 +23,9 @@ function_line : Function function_name LParenthese (args|Comma)* RParenthese Eq 
 function_name : FunctionVariable;
 args : equation|expression|size|fa|fn|fs|t;
 call : method (ArgLParenthese|LParenthese) (args|Comma)* RParenthese ;
+annotation_line: (At|ArgAt)  annotation_name AnnotationLParenthese annotation AnnotationRParenthese;
+annotation_name : AnnotationVariable;
+annotation : ~(AnnotationRParenthese)*;
 
 equation : variable (ArgEq|Eq) (expression);
 intersection_for : (ArgIntersectionFor|IntersectionFor) (ArgLParenthese|LParenthese) ((variable ArgEq (ArgLBracket expression Colon expression ArrayRBracket | expression)) Comma?)+ RParenthese;
@@ -108,12 +111,12 @@ y : expression;
 z : expression;
 
 union_of : Union LParenthese RParenthese;
-difference : Difference LParenthese RParenthese;
+difference : annotation_name? Difference LParenthese RParenthese;
 intersection : Intersection LParenthese RParenthese;
 
 sphere : Sphere LParenthese ((r|d|number|expression)|fa|fs|fn|Comma)* RParenthese;
 cube : Cube LParenthese (size|center|point|number|expression|Comma)* RParenthese;
-cylinder : Cylinder LParenthese (h Comma? | r Comma? | r1 Comma? | r2 Comma? | d Comma? | fa Comma? | center Comma?| special Comma? | expression Comma?)+ RParenthese;
+cylinder : annotation_line? Cylinder LParenthese (h Comma? | r Comma? | r1 Comma? | r2 Comma? | d Comma? | fa Comma? | center Comma?| special Comma? | expression Comma?)+ RParenthese;
 polyhedron : Polyhedron LParenthese (points|faces|convexity|triangles|Comma)* RParenthese;
 children : Children LParenthese expression? RParenthese;
 
