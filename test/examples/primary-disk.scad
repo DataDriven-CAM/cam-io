@@ -8,8 +8,6 @@ bearingJ=165;
 bearingJ1=225;
 bearingN2=7;
 
-use <threads.scad>
-
 module primaryDisk() {
 goniometerHeight=40+14;
 goniometerRadius=bearingd1/2;
