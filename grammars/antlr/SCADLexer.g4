@@ -85,7 +85,6 @@ Whitespace  :   ( ' '
          ) -> channel(HIDDEN)
     ;
 
-Newline: ('\n');
 
 fragment
 Digit	    : '0'..'9'
