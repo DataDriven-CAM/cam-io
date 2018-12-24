@@ -9,7 +9,7 @@ options {
     tokenVocab=SCADLexer;
 }
 
-scad : (import_line Semicolon | use_line | modules | function_line | echo Semicolon | font Semicolon| call Semicolon | component ((scope|implicit_scope+) Semicolon?|Semicolon) |equation Semicolon | special Semicolon |booleans (scope) |intersection_for ((scope|implicit_scope+) Semicolon?) | for_loop ((scope|implicit_scope+) Semicolon?) | if_then_else)+ EOF;
+scad : (import_line Semicolon | use_line | modules | function_line | echo Semicolon | font Semicolon| call Semicolon | component ((scope|implicit_scope+) Semicolon?|Semicolon) |equation Semicolon | special Semicolon |booleans (scope) |intersection_for ((scope|implicit_scope+) Semicolon?) | for_loop | if_then_else)+ EOF;
 
 use_line : Use LAngleBracket file_path RAngleBracket;
 import_line : modifier? Import import_file;
@@ -17,7 +17,7 @@ file_path : ~(RAngleBracket)*;
 import_file : LParenthese file (Comma (convexity|layer|origin|scale_arg))* RParenthese;
 file : (variable Eq)*String;
 
-modules : Module module_name (LParenthese (args|Comma)* RParenthese)? (scope|implicit_scope+) Semicolon?(scope|implicit_scope+) Semicolon?;
+modules : Module module_name (LParenthese (args|Comma)* RParenthese)? (scope|implicit_scope+) Semicolon?;//(scope|implicit_scope+) Semicolon?;
 module_name : Variable;
 function_line : Function function_name LParenthese (args|Comma)* RParenthese Eq (scope|implicit_scope+)?  Semicolon?;
 function_name : Variable;
@@ -29,7 +29,7 @@ annotation : ~(RParenthese)*;
 
 equation : variable Eq (expression);
 intersection_for : (IntersectionFor|IntersectionFor) LParenthese ((variable Eq (LBracket expression Colon expression RBracket | expression)) Comma?)+ RParenthese;
-for_loop : modifier? For LParenthese ((variable Eq (LBracket expression (Colon expression)? Colon expression RBracket | expression)) Comma?)+ RParenthese;
+for_loop : modifier? For LParenthese ((variable Eq (LBracket expression (Colon expression)? Colon expression RBracket | expression)) Comma?)+ RParenthese ((scope|implicit_scope+) Semicolon?)?;
 if_then_else : If LParenthese expression logical? RParenthese (scope|implicit_scope+ Semicolon) else_?;
 else_ : Else (if_then_else| scope | implicit_scope+ Semicolon);
 
@@ -80,7 +80,7 @@ component : modifier? (color|transforms|children|sphere|cube|cylinder|polyhedron
 booleans : (union_of|difference|intersection);
 modifier : Multiply|Not|Pound|Percent;
 scope : (LBrace (implicit_scope Semicolon?)+  RBrace) ;
-implicit_scope : ((component+ | booleans component* |modules component* | function_line component* Semicolon?|intersection_for | for_loop implicit_scope? |equation Semicolon| expression Semicolon?| if_then_else | echo) scope?);
+implicit_scope : ((component+ | booleans component* |modules component* | function_line component* Semicolon?|intersection_for | for_loop |equation Semicolon| expression Semicolon?| if_then_else | echo) scope?);
 
 transforms : (translate|rotate|scale|resize|mirror|offset);
 color : Color LParenthese (LBracket red Comma green Comma blue RBracket|expression|Comma)+ RParenthese ;
@@ -122,7 +122,7 @@ children : Children LParenthese expression? RParenthese;
 
 circle : Circle LParenthese ((r|d|variable|number)|fa|fs|fn|expression|Comma)* RParenthese;
 square : Square LParenthese (size|center|point|number|logical|expression|Comma)* RParenthese;
-polygon : Polygon LParenthese (points|paths|convexity|LBracket for_loop implicit_scope RBracket|expression|Comma)* RParenthese;
+polygon : Polygon LParenthese (points|paths|convexity|LBracket for_loop RBracket|expression|Comma)* RParenthese;
 text : Text LParenthese textual (size|number|font|halign|valign|fn|expression|Comma)* RParenthese;
 textual : (Variable|String)|expression;
 font : Font Eq expression;
